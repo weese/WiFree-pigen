@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>list</title>
+  <meta name="description" content="">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <style type="text/css">
+    .file {
+    }
+    .file a,button {
+      margin: 15px;
+    }
+    .file div {
+      display: inline-block;
+    }
+    
+    #wait {
+      position: fixed;
+      width: 200px;
+      height: 200px;
+      top: 50%;
+      left: 50%;
+      margin-top: -100px;
+      margin-left: -100px;
+      background: lightblue;
+      text-align: center;
+      display:table;      
+      visibility: hidden;
+           
+    }    
+    #wait span {
+      display:table-cell;
+      vertical-align:middle;
+    }
+    #list pre {
+      display: inline-block;
+    }
+
+    .cam_nav {
+      width: 100%;
+      margin: 0px;
+      padding: 0px;
+      text-align: center;
+    }
+    .cam_nav button {
+      width: 30%;
+      margin: 0px;
+      padding: 0px;
+    }
+  </style>
+  <script type="text/javascript">
+
+   if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function(suffix) {
+        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+   }
+  
+    function show_wait() {
+      document.getElementById("wait").style.visibility = "visible"
+    }
+    function hide_wait() {
+      document.getElementById("wait").style.visibility = "hidden"
+    }
+  
+    var data = {};
+    data.list = [];
+    
+    function load_list() {
+      show_wait();
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        var DONE = 4;
+        var OK = 200;
+        if (xhr.readyState === DONE) {
+          if (xhr.status === OK) {            
+            data = JSON.parse(xhr.responseText)                          
+            console.log(data)     
+            update_list();                 
+          } else {
+            console.log('Error: ' + xhr.status)            
+          }
+          hide_wait();
+        }
+        
+      };
+      
+      xhr.open('GET', '/listfiles');
+      xhr.send(null);
+    }
+
+    function lpad(s,n) {
+      var str = ""
+      for (var i=0; i<(n-String(s).length); i++)
+        str += '&nbsp;'
+      str += s
+      return str;
+    }
+
+    function http_get(url)
+    {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url);
+      xhr.send(null);
+    }
+    
+    function update_list() {
+      var listdiv = document.getElementById("list");
+      listdiv.innerHTML="";
+      var usagediv = document.getElementById("usage");
+      usagediv.innerHTML="";
+
+      usagediv.innerHTML=data.usage[0] + " / " + data.usage[1] + " frei"
+
+      for (var i=0; i<data.list.length; i++) {
+        listdiv.insertAdjacentHTML('beforeend', '<div class="file"><a href="'+data.list[i][0]+'">'+data.list[i][0]+'</a><pre>'+lpad(data.list[i][1],12)+' bytes</pre><div><button '+(data.list[i][0].endsWith(".mp4") ? "disabled" : "endabled") + ' onClick="convert_file(\''+data.list[i][0]+'\')">convert to mp4</button><button onClick="delete_file(\''+data.list[i][0]+'\')">delete</button></div></div>')
+	if (i < data.list.length-1){
+          listdiv.insertAdjacentHTML('beforeend', '<hr/>')
+        }
+      }
+      
+    }
+    
+    function convert_file(file) {
+      show_wait()
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        var DONE = 4;
+        var OK = 200;
+        if (xhr.readyState === DONE) {
+          if (xhr.status === OK) {            
+            data = JSON.parse(xhr.responseText)                          
+            console.log(data)     
+            update_list();                 
+          } else {
+            console.log('Error: ' + xhr.status)            
+          }
+          hide_wait();
+        }
+        
+      };
+      
+      xhr.open('GET', '/convertfile?file='+file);
+      xhr.send(null);            
+    }
+    
+    function delete_file(file) {
+      if (confirm("delete " + file + "?")) {
+        show_wait()
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          var DONE = 4;
+          var OK = 200;
+          if (xhr.readyState === DONE) {
+            if (xhr.status === OK) {            
+              data = JSON.parse(xhr.responseText)                          
+              console.log(data)     
+              update_list();                 
+            } else {
+              console.log('Error: ' + xhr.status)            
+            }
+            hide_wait();
+          }
+          
+        };
+        
+        xhr.open('GET', '/deletefile?file='+file);
+        xhr.send(null);            
+      }
+    }
+    
+
+  </script>
+</head>
+<body onload="load_list()">
+  <h5>Kamera</h5>
+  <div class="cam_nav">
+    <button onClick="http_get('/cam_on')">ON</button>
+    <button onClick="http_get('/cam_off')">OFF</button>
+    <button onClick="http_get('/record_on')">REC</button>
+  </div>
+  <hr />
+  <h5>Speicherbelegung</h5>
+  <div id="usage"></div>
+  <hr />
+  <div id="list">
+  </div>
+  
+  <div id="wait">
+    
+      <span>please wait...</span>
+    
+  </div>
+    
+  
+</body>
+</html>
+

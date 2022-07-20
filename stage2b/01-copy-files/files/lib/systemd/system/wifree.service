@@ -1,0 +1,19 @@
+[Unit]
+Description=WiFree Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/root/WiFree/create_partition.sh &>/dev/null
+ExecStart=/root/WiFree/wifree-msp.rb &>/dev/null
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target
+
+
+

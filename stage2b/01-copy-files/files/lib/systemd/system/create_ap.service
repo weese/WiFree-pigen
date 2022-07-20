@@ -1,0 +1,17 @@
+[Unit]
+Description=Create AP Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/sbin/ifdown wlan0
+ExecStart=/data/start_ap.sh
+#ExecStopPost=/sbin/ifup wlan0
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+
