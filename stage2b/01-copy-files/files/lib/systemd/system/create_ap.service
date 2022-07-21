@@ -4,7 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStartPre=/sbin/ifdown wlan0
+#ExecStartPre=/sbin/ifdown wlan0
+ExecStartPre=/usr/sbin/ip link set wlan0 down
 ExecStart=/data/start_ap.sh
 #ExecStopPost=/sbin/ifup wlan0
 KillSignal=SIGINT
