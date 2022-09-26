@@ -56,8 +56,8 @@ end
 
 
 def emergency
-	$hold = true
-	$values[:aux2] = 2000
+	# $hold = true
+	# $values[:aux2] = 2000
 end
 
 def all_clear

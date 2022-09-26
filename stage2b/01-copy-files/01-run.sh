@@ -28,3 +28,15 @@ install -m 755 files/root/WiFree/wfpicam.py          "${ROOTFS_DIR}/root/WiFree/
 install -m 755 files/root/WiFree/wifree-msp.rb       "${ROOTFS_DIR}/root/WiFree/"
 
 mkdir -p "${ROOTFS_DIR}/video"
+
+# boot config
+cat << EOF >> ${ROOTFS_DIR}/boot/config.txt
+start_x=1
+enable_uart=1
+dtoverlay=disable-bt
+dtoverlay=pi3-disable-bt
+dtoverlay=miniuart-bt
+EOF
+
+# disable terminal on serial
+sed -i 's/console=serial0,115200//' $DESTBOOT/cmdline.txt"

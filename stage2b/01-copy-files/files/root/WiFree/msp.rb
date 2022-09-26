@@ -5,11 +5,11 @@ def gen_msp(values)
 	sequence = [:throttle, :aileron, :elevator, :rudder, :aux1, :aux2, :aux3, :aux4 ]
 
 	data = sequence.map{|k| values[k]||1500}
-	msp(200, data)
+	msp2(200, data)
 end
 
 def msp(command, data)
-	crc= 0
+	crc = 0
 	
 	res = [data.length*2, command] + data.pack("v*").bytes
 	res.each{|d| crc ^= d}
@@ -18,6 +18,27 @@ def msp(command, data)
 	"$M<" + res.pack("c*")
 end
 
+def crc8_dvb_s2(crc, a)
+    crc ^= a;
+    for ii in 1..8 do
+        if crc & 0x80 == 0x80
+            crc = (crc << 1) ^ 0xD5;
+        else
+            crc = (crc << 1)
+		end
+    end
+	crc &= 0xff
+end
+
+def msp2(command, data)
+	res = [0] + ([command, data.length*2] + data).pack("v*").bytes
+
+	ck2 = 0; # initialise CRC
+	res.each{|d| ck2 = crc8_dvb_s2(ck2, d)}
+	res << ck2
+
+	"$X<" + res.pack("c*")
+end
 
 if __FILE__==$0
 	data = [1200,1300,1400,1500,1600,1700,1800,1900] 
